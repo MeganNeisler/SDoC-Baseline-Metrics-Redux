@@ -177,6 +177,7 @@ p <- monthly_deletions %>%
                 x= "Date",
                 y = "Proportion",
                 title = "Proportion of all uploaded files deleted within 1 month (28 days)",
+                # In order to distinguish this plot from monthly_deletions_alluploads.png, change the title to "Proportion of all deleted files deleted within 1 month (28 days)"?
                 subtitle = "Includes only files deleted as of 2018-02-01"
   )
 p
@@ -189,6 +190,7 @@ ggsave("figures/monthly_deletions_alldel.png", p, width = 18, height = 9, units 
 require(ggplot2)
 require(scales)
 
+# Alternatives: To compare proportions, we can also compute and plot points with confidence intervals or credible intervals. Example: https://github.com/wikimedia-research/SDoC-Initial-Metrics/blob/master/T177534/figures/zrr_all.png
 p <- filter(monthly_deletions, !media_type %in% c("unknown", "archive", "text")) %>% 
         ggplot(aes(x=factor(1), fill=delete_in_month)) +
         geom_bar(position = "fill") +
@@ -198,6 +200,7 @@ p <- filter(monthly_deletions, !media_type %in% c("unknown", "archive", "text"))
              fill = "Deleted",
              x = "",
              y = "Proportion of files deleted within 1 month ",
+             # In order to distinguish this plot from monthly_deletions_alluploads.png, change the title to "Proportion of deleted files deleted within 1 month"?
         subtitle = "Includes only files deleted as of 2018-02-01"
 p
 ggsave("figures/monthly_deletions_bytype.png", p, width = 18, height = 9, units = "in", dpi = 150)
@@ -237,7 +240,7 @@ save(all_uploads, file = "data/all_uploads.RData")
 deleted_in_month_result <- "SELECT 
 DATE(LEFT(fa_timestamp, 8)) AS upload_date, Count(*) AS n_deleted_month
 FROM filearchive
-WHERE DATE(TIME_TO_SEC(fa_timestamp)) - DATE(TIME_TO_SEC(fa_deleted_timestamp)) <= 2419200
+WHERE TIME_TO_SEC(fa_timestamp) - TIME_TO_SEC(fa_deleted_timestamp) <= 2419200
 GROUP BY DATE(LEFT(fa_timestamp, 8))
 "
 ```
@@ -288,6 +291,7 @@ max_prop
 ```
 
 ```{r}
+# Alternatives: For series of proportions, we can also compute and plot the CI (confidence interval or credible interval) band of the line. Example: https://github.com/wikimedia-research/SDoC-Initial-Metrics/blob/master/T177534/figures/daily_zrr.png
 p <- ggplot(filter(monthly_deletions_alluploads, upload_month < "2018-02-01"),
             aes(x = upload_month, y = prop_deleted)) +
         geom_line() +
@@ -300,6 +304,7 @@ p <- ggplot(filter(monthly_deletions_alluploads, upload_month < "2018-02-01"),
                 size = 3
 ) + 
         geom_hline(aes(yintercept = median(prop_deleted)), linetype = "dashed") +
+  # It would be helpful to add a note in subtitle or caption, to tell the audience what the dash line represent
         scale_y_continuous(labels = scales::percent_format()) +
         scale_x_date(date_labels = "%Y", date_breaks = "1 year", date_minor_breaks = "1 year")  +
         wmf::theme_min() +
